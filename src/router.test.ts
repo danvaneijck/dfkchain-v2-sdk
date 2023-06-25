@@ -2,7 +2,11 @@ import JSBI from 'jsbi'
 import { Pair, Route, Trade } from './entities'
 import { Router } from './router'
 import invariant from 'tiny-invariant'
-import { CurrencyAmount, Percent, Ether, Token, WETH9 } from '@uniswap/sdk-core'
+import { CurrencyAmount, Percent, Token } from '@uniswap/sdk-core'
+import { WKLAY } from './entities'
+import { KLAY } from './entities'
+
+const CHAIN_ID = 8217
 
 function checkDeadline(deadline: string[] | string): void {
   expect(typeof deadline).toBe('string')
@@ -12,9 +16,9 @@ function checkDeadline(deadline: string[] | string): void {
 }
 
 describe('Router', () => {
-  const ETHER = Ether.onChain(1)
-  const token0 = new Token(1, '0x0000000000000000000000000000000000000001', 18, 't0')
-  const token1 = new Token(1, '0x0000000000000000000000000000000000000002', 18, 't1')
+  const ETHER = KLAY.onChain(CHAIN_ID)
+  const token0 = new Token(CHAIN_ID, '0x0000000000000000000000000000000000000001', 18, 't0')
+  const token1 = new Token(CHAIN_ID, '0x0000000000000000000000000000000000000002', 18, 't1')
 
   const pair_0_1 = new Pair(
     CurrencyAmount.fromRawAmount(token0, JSBI.BigInt(1000)),
@@ -22,7 +26,7 @@ describe('Router', () => {
   )
 
   const pair_weth_0 = new Pair(
-    CurrencyAmount.fromRawAmount(WETH9[1], '1000'),
+    CurrencyAmount.fromRawAmount(WKLAY[CHAIN_ID], '1000'),
     CurrencyAmount.fromRawAmount(token0, '1000')
   )
 
@@ -32,14 +36,14 @@ describe('Router', () => {
         const result = Router.swapCallParameters(
           Trade.exactIn(
             new Route([pair_weth_0, pair_0_1], ETHER, token1),
-            CurrencyAmount.fromRawAmount(Ether.onChain(1), JSBI.BigInt(100))
+            CurrencyAmount.fromRawAmount(KLAY.onChain(CHAIN_ID), JSBI.BigInt(100))
           ),
           { ttl: 50, recipient: '0x0000000000000000000000000000000000000004', allowedSlippage: new Percent('1', '100') }
         )
         expect(result.methodName).toEqual('swapExactETHForTokens')
         expect(result.args.slice(0, -1)).toEqual([
           '0x51',
-          [WETH9[1].address, token0.address, token1.address],
+          [WKLAY[CHAIN_ID].address, token0.address, token1.address],
           '0x0000000000000000000000000000000000000004'
         ])
         expect(result.value).toEqual('0x64')
@@ -50,7 +54,7 @@ describe('Router', () => {
         const result = Router.swapCallParameters(
           Trade.exactIn(
             new Route([pair_weth_0, pair_0_1], ETHER, token1),
-            CurrencyAmount.fromRawAmount(Ether.onChain(1), JSBI.BigInt(100))
+            CurrencyAmount.fromRawAmount(KLAY.onChain(CHAIN_ID), JSBI.BigInt(100))
           ),
           {
             deadline: 50,
@@ -61,7 +65,7 @@ describe('Router', () => {
         expect(result.methodName).toEqual('swapExactETHForTokens')
         expect(result.args).toEqual([
           '0x51',
-          [WETH9[1].address, token0.address, token1.address],
+          [WKLAY[CHAIN_ID].address, token0.address, token1.address],
           '0x0000000000000000000000000000000000000004',
           '0x32'
         ])
@@ -80,7 +84,7 @@ describe('Router', () => {
         expect(result.args.slice(0, -1)).toEqual([
           '0x64',
           '0x51',
-          [token1.address, token0.address, WETH9[1].address],
+          [token1.address, token0.address, WKLAY[CHAIN_ID].address],
           '0x0000000000000000000000000000000000000004'
         ])
         expect(result.value).toEqual('0x0')
@@ -114,7 +118,7 @@ describe('Router', () => {
         expect(result.methodName).toEqual('swapETHForExactTokens')
         expect(result.args.slice(0, -1)).toEqual([
           '0x64',
-          [WETH9[1].address, token0.address, token1.address],
+          [WKLAY[CHAIN_ID].address, token0.address, token1.address],
           '0x0000000000000000000000000000000000000004'
         ])
         expect(result.value).toEqual('0x80')
@@ -124,7 +128,7 @@ describe('Router', () => {
         const result = Router.swapCallParameters(
           Trade.exactOut(
             new Route([pair_0_1, pair_weth_0], token1, ETHER),
-            CurrencyAmount.fromRawAmount(Ether.onChain(1), JSBI.BigInt(100))
+            CurrencyAmount.fromRawAmount(KLAY.onChain(CHAIN_ID), JSBI.BigInt(100))
           ),
           { ttl: 50, recipient: '0x0000000000000000000000000000000000000004', allowedSlippage: new Percent('1', '100') }
         )
@@ -132,7 +136,7 @@ describe('Router', () => {
         expect(result.args.slice(0, -1)).toEqual([
           '0x64',
           '0x80',
-          [token1.address, token0.address, WETH9[1].address],
+          [token1.address, token0.address, WKLAY[CHAIN_ID].address],
           '0x0000000000000000000000000000000000000004'
         ])
         expect(result.value).toEqual('0x0')
@@ -160,7 +164,7 @@ describe('Router', () => {
           const result = Router.swapCallParameters(
             Trade.exactIn(
               new Route([pair_weth_0, pair_0_1], ETHER, token1),
-              CurrencyAmount.fromRawAmount(Ether.onChain(1), JSBI.BigInt(100))
+              CurrencyAmount.fromRawAmount(KLAY.onChain(CHAIN_ID), JSBI.BigInt(100))
             ),
             {
               ttl: 50,
@@ -172,7 +176,7 @@ describe('Router', () => {
           expect(result.methodName).toEqual('swapExactETHForTokensSupportingFeeOnTransferTokens')
           expect(result.args.slice(0, -1)).toEqual([
             '0x51',
-            [WETH9[1].address, token0.address, token1.address],
+            [WKLAY[CHAIN_ID].address, token0.address, token1.address],
             '0x0000000000000000000000000000000000000004'
           ])
           expect(result.value).toEqual('0x64')
@@ -195,7 +199,7 @@ describe('Router', () => {
           expect(result.args.slice(0, -1)).toEqual([
             '0x64',
             '0x51',
-            [token1.address, token0.address, WETH9[1].address],
+            [token1.address, token0.address, WKLAY[CHAIN_ID].address],
             '0x0000000000000000000000000000000000000004'
           ])
           expect(result.value).toEqual('0x0')
@@ -247,7 +251,7 @@ describe('Router', () => {
             Router.swapCallParameters(
               Trade.exactOut(
                 new Route([pair_0_1, pair_weth_0], token1, ETHER),
-                CurrencyAmount.fromRawAmount(Ether.onChain(1), JSBI.BigInt(100))
+                CurrencyAmount.fromRawAmount(KLAY.onChain(CHAIN_ID), JSBI.BigInt(100))
               ),
               {
                 ttl: 50,
