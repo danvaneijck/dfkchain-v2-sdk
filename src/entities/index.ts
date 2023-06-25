@@ -1,5 +1,5 @@
 export * from './pair'
 export * from './route'
 export * from './trade'
-export * from './jewel'
-export * from './wjewel'
+export * from './klay'
+export * from './wklay'
