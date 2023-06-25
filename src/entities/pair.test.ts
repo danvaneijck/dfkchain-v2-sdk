@@ -63,14 +63,6 @@ describe('Pair', () => {
   const USDC = new Token(CHAIN_ID, '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a', 18, 'USDC', 'USD Coin')
   const CRYSTAL = new Token(CHAIN_ID, '0x04b9dA42306B023f3572e106B11D82aAd9D32EBb', 18, 'CRYSTAL', 'Crystals')
 
-  // describe('constructor', () => {
-  //   it('cannot be used for tokens on different chains', () => {
-  //     expect(
-  //       () => new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(WJEWEL[CHAIN_ID], '100'))
-  //     ).toThrow('CHAIN_IDS')
-  //   })
-  // })
-
   describe('#getAddress', () => {
     it('returns the correct address', () => {
       expect(Pair.getAddress(USDC, CRYSTAL)).toEqual('0x04Dec678825b8DfD2D0d9bD83B538bE3fbDA2926')

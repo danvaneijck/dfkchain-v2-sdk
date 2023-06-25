@@ -24,8 +24,8 @@ export abstract class Fetcher {
     public static async fetchPairData(
         tokenA: Token,
         tokenB: Token,
-        // factoryAddress: string,
-        // initHashCode: string,
+        factoryAddress: string,
+        initHashCode: string,
         provider = getDefaultProvider(getNetwork(tokenA.chainId))
     ): Promise<Pair> {
         invariant(tokenA.chainId === tokenB.chainId, 'CHAIN_ID')
@@ -35,8 +35,8 @@ export abstract class Fetcher {
         return new Pair(
             CurrencyAmount.fromRawAmount(tokenA, balances[0]),
             CurrencyAmount.fromRawAmount(tokenB, balances[1]),
-            // factoryAddress,
-            // initHashCode
+            factoryAddress,
+            initHashCode
         )
     }
 }
