@@ -2,14 +2,18 @@ import { Pair } from './pair'
 import { Route } from './route'
 import { Trade } from './trade'
 import JSBI from 'jsbi'
-import { Ether, CurrencyAmount, Percent, Token, TradeType, WETH9, Price } from '@uniswap/sdk-core'
+import { CurrencyAmount, Percent, Token, TradeType, Price } from '@uniswap/sdk-core'
+import { WJEWEL } from './wjewel'
+import { JEWEL } from './jewel'
+
+let CHAIN_ID = 53935
 
 describe('Trade', () => {
-  const ETHER = Ether.onChain(1)
-  const token0 = new Token(1, '0x0000000000000000000000000000000000000001', 18, 't0')
-  const token1 = new Token(1, '0x0000000000000000000000000000000000000002', 18, 't1')
-  const token2 = new Token(1, '0x0000000000000000000000000000000000000003', 18, 't2')
-  const token3 = new Token(1, '0x0000000000000000000000000000000000000004', 18, 't3')
+  const ETHER = JEWEL.onChain(CHAIN_ID)
+  const token0 = new Token(CHAIN_ID, '0x0000000000000000000000000000000000000001', 18, 't0')
+  const token1 = new Token(CHAIN_ID, '0x0000000000000000000000000000000000000002', 18, 't1')
+  const token2 = new Token(CHAIN_ID, '0x0000000000000000000000000000000000000003', 18, 't2')
+  const token3 = new Token(CHAIN_ID, '0x0000000000000000000000000000000000000004', 18, 't3')
 
   const pair_0_1 = new Pair(
     CurrencyAmount.fromRawAmount(token0, JSBI.BigInt(1000)),
@@ -33,7 +37,7 @@ describe('Trade', () => {
   )
 
   const pair_weth_0 = new Pair(
-    CurrencyAmount.fromRawAmount(WETH9[1], JSBI.BigInt(1000)),
+    CurrencyAmount.fromRawAmount(WJEWEL[CHAIN_ID], JSBI.BigInt(1000)),
     CurrencyAmount.fromRawAmount(token0, JSBI.BigInt(1000))
   )
 
@@ -45,12 +49,13 @@ describe('Trade', () => {
   it('can be constructed with ETHER as input', () => {
     const trade = new Trade(
       new Route([pair_weth_0], ETHER, token0),
-      CurrencyAmount.fromRawAmount(Ether.onChain(1), JSBI.BigInt(100)),
+      CurrencyAmount.fromRawAmount(JEWEL.onChain(CHAIN_ID), JSBI.BigInt(100)),
       TradeType.EXACT_INPUT
     )
     expect(trade.inputAmount.currency).toEqual(ETHER)
     expect(trade.outputAmount.currency).toEqual(token0)
   })
+
   it('can be constructed with ETHER as input for exact output', () => {
     const trade = new Trade(
       new Route([pair_weth_0], ETHER, token0),
@@ -64,7 +69,7 @@ describe('Trade', () => {
   it('can be constructed with ETHER as output', () => {
     const trade = new Trade(
       new Route([pair_weth_0], token0, ETHER),
-      CurrencyAmount.fromRawAmount(Ether.onChain(1), JSBI.BigInt(100)),
+      CurrencyAmount.fromRawAmount(JEWEL.onChain(CHAIN_ID), JSBI.BigInt(100)),
       TradeType.EXACT_OUTPUT
     )
     expect(trade.inputAmount.currency).toEqual(token0)
@@ -164,15 +169,15 @@ describe('Trade', () => {
     it('works for ETHER currency input', () => {
       const result = Trade.bestTradeExactIn(
         [pair_weth_0, pair_0_1, pair_0_3, pair_1_3],
-        CurrencyAmount.fromRawAmount(Ether.onChain(1), JSBI.BigInt(100)),
+        CurrencyAmount.fromRawAmount(JEWEL.onChain(CHAIN_ID), JSBI.BigInt(100)),
         token3
       )
       expect(result).toHaveLength(2)
       expect(result[0].inputAmount.currency).toEqual(ETHER)
-      expect(result[0].route.path).toEqual([WETH9[1], token0, token1, token3])
+      expect(result[0].route.path).toEqual([WJEWEL[CHAIN_ID], token0, token1, token3])
       expect(result[0].outputAmount.currency).toEqual(token3)
       expect(result[1].inputAmount.currency).toEqual(ETHER)
-      expect(result[1].route.path).toEqual([WETH9[1], token0, token3])
+      expect(result[1].route.path).toEqual([WJEWEL[CHAIN_ID], token0, token3])
       expect(result[1].outputAmount.currency).toEqual(token3)
     })
     it('works for ETHER currency output', () => {
@@ -183,10 +188,10 @@ describe('Trade', () => {
       )
       expect(result).toHaveLength(2)
       expect(result[0].inputAmount.currency).toEqual(token3)
-      expect(result[0].route.path).toEqual([token3, token0, WETH9[1]])
+      expect(result[0].route.path).toEqual([token3, token0, WJEWEL[CHAIN_ID]])
       expect(result[0].outputAmount.currency).toEqual(ETHER)
       expect(result[1].inputAmount.currency).toEqual(token3)
-      expect(result[1].route.path).toEqual([token3, token1, token0, WETH9[1]])
+      expect(result[1].route.path).toEqual([token3, token1, token0, WJEWEL[CHAIN_ID]])
       expect(result[1].outputAmount.currency).toEqual(ETHER)
     })
   })
@@ -438,24 +443,24 @@ describe('Trade', () => {
       )
       expect(result).toHaveLength(2)
       expect(result[0].inputAmount.currency).toEqual(ETHER)
-      expect(result[0].route.path).toEqual([WETH9[1], token0, token1, token3])
+      expect(result[0].route.path).toEqual([WJEWEL[CHAIN_ID], token0, token1, token3])
       expect(result[0].outputAmount.currency).toEqual(token3)
       expect(result[1].inputAmount.currency).toEqual(ETHER)
-      expect(result[1].route.path).toEqual([WETH9[1], token0, token3])
+      expect(result[1].route.path).toEqual([WJEWEL[CHAIN_ID], token0, token3])
       expect(result[1].outputAmount.currency).toEqual(token3)
     })
     it('works for ETHER currency output', () => {
       const result = Trade.bestTradeExactOut(
         [pair_weth_0, pair_0_1, pair_0_3, pair_1_3],
         token3,
-        CurrencyAmount.fromRawAmount(Ether.onChain(1), JSBI.BigInt(100))
+        CurrencyAmount.fromRawAmount(JEWEL.onChain(CHAIN_ID), JSBI.BigInt(100))
       )
       expect(result).toHaveLength(2)
       expect(result[0].inputAmount.currency).toEqual(token3)
-      expect(result[0].route.path).toEqual([token3, token0, WETH9[1]])
+      expect(result[0].route.path).toEqual([token3, token0, WJEWEL[CHAIN_ID]])
       expect(result[0].outputAmount.currency).toEqual(ETHER)
       expect(result[1].inputAmount.currency).toEqual(token3)
-      expect(result[1].route.path).toEqual([token3, token1, token0, WETH9[1]])
+      expect(result[1].route.path).toEqual([token3, token1, token0, WJEWEL[CHAIN_ID]])
       expect(result[1].outputAmount.currency).toEqual(ETHER)
     })
   })

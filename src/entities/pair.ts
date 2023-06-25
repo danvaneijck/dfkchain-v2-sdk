@@ -8,39 +8,58 @@ import { FACTORY_ADDRESS, INIT_CODE_HASH, MINIMUM_LIQUIDITY, FIVE, _997, _1000, 
 import { InsufficientReservesError, InsufficientInputAmountError } from '../errors'
 
 export const computePairAddress = ({
-  factoryAddress,
   tokenA,
-  tokenB
+  tokenB,
+  factoryAddress,
+  initHashCode
 }: {
   factoryAddress: string
   tokenA: Token
   tokenB: Token
+  initHashCode: string
 }): string => {
   const [token0, token1] = tokenA.sortsBefore(tokenB) ? [tokenA, tokenB] : [tokenB, tokenA] // does safety checks
   return getCreate2Address(
     factoryAddress,
     keccak256(['bytes'], [pack(['address', 'address'], [token0.address, token1.address])]),
-    INIT_CODE_HASH
+    initHashCode
   )
 }
+
 export class Pair {
   public readonly liquidityToken: Token
   private readonly tokenAmounts: [CurrencyAmount<Token>, CurrencyAmount<Token>]
+  private readonly factoryAddress: string
+  private readonly initCodeHash: string
 
-  public static getAddress(tokenA: Token, tokenB: Token): string {
-    return computePairAddress({ factoryAddress: FACTORY_ADDRESS, tokenA, tokenB })
+  public static getAddress(
+    tokenA: Token,
+    tokenB: Token,
+    factoryAddress = FACTORY_ADDRESS,
+    initHashCode = INIT_CODE_HASH
+  ): string {
+    return computePairAddress({ tokenA, tokenB, factoryAddress, initHashCode })
   }
 
-  public constructor(currencyAmountA: CurrencyAmount<Token>, tokenAmountB: CurrencyAmount<Token>) {
+  public constructor(
+    currencyAmountA: CurrencyAmount<Token>,
+    tokenAmountB: CurrencyAmount<Token>,
+    factoryAddress = FACTORY_ADDRESS,
+    initCodeHash = INIT_CODE_HASH
+  ) {
     const tokenAmounts = currencyAmountA.currency.sortsBefore(tokenAmountB.currency) // does safety checks
       ? [currencyAmountA, tokenAmountB]
       : [tokenAmountB, currencyAmountA]
+
+    this.factoryAddress = factoryAddress
+    this.initCodeHash = initCodeHash
+
     this.liquidityToken = new Token(
       tokenAmounts[0].currency.chainId,
-      Pair.getAddress(tokenAmounts[0].currency, tokenAmounts[1].currency),
+      Pair.getAddress(tokenAmounts[0].currency, tokenAmounts[1].currency, factoryAddress, initCodeHash),
       18,
-      'UNI-V2',
-      'Uniswap V2'
+      'JEWEL-LP',
+      'Jewel LP Token'
     )
     this.tokenAmounts = tokenAmounts as [CurrencyAmount<Token>, CurrencyAmount<Token>]
   }
@@ -123,7 +142,12 @@ export class Pair {
     if (JSBI.equal(outputAmount.quotient, ZERO)) {
       throw new InsufficientInputAmountError()
     }
-    return [outputAmount, new Pair(inputReserve.add(inputAmount), outputReserve.subtract(outputAmount))]
+    return [outputAmount, new Pair(
+      inputReserve.add(inputAmount),
+      outputReserve.subtract(outputAmount),
+      this.factoryAddress,
+      this.initCodeHash
+    )]
   }
 
   public getInputAmount(outputAmount: CurrencyAmount<Token>): [CurrencyAmount<Token>, Pair] {
@@ -144,7 +168,12 @@ export class Pair {
       outputAmount.currency.equals(this.token0) ? this.token1 : this.token0,
       JSBI.add(JSBI.divide(numerator, denominator), ONE)
     )
-    return [inputAmount, new Pair(inputReserve.add(inputAmount), outputReserve.subtract(outputAmount))]
+    return [inputAmount, new Pair(
+      inputReserve.add(inputAmount),
+      outputReserve.subtract(outputAmount),
+      this.factoryAddress,
+      this.initCodeHash
+    )]
   }
 
   public getLiquidityMinted(

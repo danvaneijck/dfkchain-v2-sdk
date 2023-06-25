@@ -1,15 +1,15 @@
 import JSBI from 'jsbi'
 import invariant from 'tiny-invariant'
-import { WETH9 as _WETH9, TradeType, Token, CurrencyAmount } from '@uniswap/sdk-core'
-import { Pair, Route, Trade } from '../index'
+import { TradeType, Token, CurrencyAmount } from '@uniswap/sdk-core'
+import { Pair, Route, Trade, WJEWEL } from '../index'
 
 const ADDRESSES = [
   '0x0000000000000000000000000000000000000001',
   '0x0000000000000000000000000000000000000002',
   '0x0000000000000000000000000000000000000003'
 ]
-const CHAIN_ID = 3
-const WETH9 = _WETH9[3]
+const CHAIN_ID = 53935
+const WJEWEL18 = WJEWEL[53935]
 const DECIMAL_PERMUTATIONS: [number, number, number][] = [
   [0, 0, 0],
   [0, 9, 18],
@@ -41,18 +41,18 @@ describe('entities', () => {
           ),
           new Pair(
             CurrencyAmount.fromRawAmount(tokens[2], decimalize(1, tokens[2].decimals)),
-            CurrencyAmount.fromRawAmount(WETH9, decimalize(1234, WETH9.decimals))
+            CurrencyAmount.fromRawAmount(WJEWEL18, decimalize(1234, WJEWEL18.decimals))
           )
         ]
       })
 
       let route: Route<Token, Token>
       it('Route', () => {
-        route = new Route(pairs, tokens[0], WETH9)
+        route = new Route(pairs, tokens[0], WJEWEL18)
         expect(route.pairs).toEqual(pairs)
-        expect(route.path).toEqual(tokens.concat([WETH9]))
+        expect(route.path).toEqual(tokens.concat([WJEWEL18]))
         expect(route.input).toEqual(tokens[0])
-        expect(route.output).toEqual(WETH9)
+        expect(route.output).toEqual(WJEWEL18)
       })
 
       it('#midPrice', () => {
@@ -80,14 +80,14 @@ describe('entities', () => {
             [
               new Pair(
                 CurrencyAmount.fromRawAmount(tokens[1], decimalize(5, tokens[1].decimals)),
-                CurrencyAmount.fromRawAmount(WETH9, decimalize(10, WETH9.decimals))
+                CurrencyAmount.fromRawAmount(WJEWEL18, decimalize(10, WJEWEL18.decimals))
               )
             ],
             tokens[1],
-            WETH9
+            WJEWEL18
           )
           const inputAmount = CurrencyAmount.fromRawAmount(tokens[1], decimalize(1, tokens[1].decimals))
-          const expectedOutputAmount = CurrencyAmount.fromRawAmount(WETH9, '1662497915624478906')
+          const expectedOutputAmount = CurrencyAmount.fromRawAmount(WJEWEL18, '1662497915624478906')
           const trade = new Trade(route, inputAmount, TradeType.EXACT_INPUT)
           expect(trade.route).toEqual(route)
           expect(trade.tradeType).toEqual(TradeType.EXACT_INPUT)
@@ -103,7 +103,7 @@ describe('entities', () => {
         })
 
         it('TradeType.EXACT_OUTPUT', () => {
-          const outputAmount = CurrencyAmount.fromRawAmount(WETH9, '1662497915624478906')
+          const outputAmount = CurrencyAmount.fromRawAmount(WJEWEL18, '1662497915624478906')
           const expectedInputAmount = CurrencyAmount.fromRawAmount(tokens[1], decimalize(1, tokens[1].decimals))
           const trade = new Trade(route, outputAmount, TradeType.EXACT_OUTPUT)
           expect(trade.route).toEqual(route)
@@ -126,16 +126,16 @@ describe('entities', () => {
                 new Pair(
                   CurrencyAmount.fromRawAmount(tokens[1], decimalize(1, tokens[1].decimals)),
                   CurrencyAmount.fromRawAmount(
-                    WETH9,
+                    WJEWEL18,
                     JSBI.add(
-                      decimalize(10, WETH9.decimals),
+                      decimalize(10, WJEWEL18.decimals),
                       tokens[1].decimals === 9 ? JSBI.BigInt('30090280812437312') : JSBI.BigInt('30090270812437322')
                     )
                   )
                 )
               ],
               tokens[1],
-              WETH9
+              WJEWEL18
             )
             const outputAmount = CurrencyAmount.fromRawAmount(tokens[1], '1')
             const trade = new Trade(route, outputAmount, TradeType.EXACT_INPUT)
