@@ -1,10 +1,9 @@
-import { Pair } from './entities/pair'
-import invariant from 'tiny-invariant'
-import { CurrencyAmount, Token } from '@uniswap/sdk-core'
-import { getDefaultProvider } from '@ethersproject/providers'
-import { getNetwork } from '@ethersproject/networks'
-import { Contract } from '@ethersproject/contracts'
-import PairABI from './abis/dfkPair.json'
+import { Pair } from './entities/pair';
+import invariant from 'tiny-invariant';
+import { CurrencyAmount, Token } from '@uniswap/sdk-core';
+import { Contract } from '@ethersproject/contracts';
+import { JsonRpcProvider } from '@ethersproject/providers';
+import PairABI from './abis/dfkPair.json';
 
 /**
  * Contains methods for constructing instances of pairs and tokens from on-chain data.
@@ -26,17 +25,17 @@ export abstract class Fetcher {
         tokenB: Token,
         factoryAddress: string,
         initHashCode: string,
-        provider = getDefaultProvider(getNetwork(tokenA.chainId))
+        provider = new JsonRpcProvider('https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc')
     ): Promise<Pair> {
-        invariant(tokenA.chainId === tokenB.chainId, 'CHAIN_ID')
-        const address = Pair.getAddress(tokenA, tokenB)
-        const [reserves0, reserves1] = await new Contract(address, PairABI.abi, provider).getReserves()
-        const balances = tokenA.sortsBefore(tokenB) ? [reserves0, reserves1] : [reserves1, reserves0]
+        invariant(tokenA.chainId === tokenB.chainId, 'CHAIN_ID');
+        const address = Pair.getAddress(tokenA, tokenB);
+        const [reserves0, reserves1] = await new Contract(address, PairABI.abi, provider).getReserves();
+        const balances = tokenA.sortsBefore(tokenB) ? [reserves0, reserves1] : [reserves1, reserves0];
         return new Pair(
             CurrencyAmount.fromRawAmount(tokenA, balances[0]),
             CurrencyAmount.fromRawAmount(tokenB, balances[1]),
             factoryAddress,
             initHashCode
-        )
+        );
     }
 }
