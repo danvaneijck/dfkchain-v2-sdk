@@ -1,10 +1,9 @@
 import { Pair } from './entities/pair'
 import invariant from 'tiny-invariant'
 import { CurrencyAmount, Token } from '@uniswap/sdk-core'
-import { getDefaultProvider } from '@ethersproject/providers'
-import { getNetwork } from '@ethersproject/networks'
 import { Contract } from '@ethersproject/contracts'
 import PairABI from './abis/dfkPair.json'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
 /**
  * Contains methods for constructing instances of pairs and tokens from on-chain data.
@@ -26,7 +25,7 @@ export abstract class Fetcher {
         tokenB: Token,
         factoryAddress: string,
         initHashCode: string,
-        provider = getDefaultProvider(getNetwork(tokenA.chainId))
+        provider = new JsonRpcProvider("https://public-node-api.klaytnapi.com/v1/cypress")
     ): Promise<Pair> {
         invariant(tokenA.chainId === tokenB.chainId, 'CHAIN_ID')
         const address = Pair.getAddress(tokenA, tokenB)
